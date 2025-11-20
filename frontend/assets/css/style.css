@@ -1,0 +1,321 @@
+/* ===============================
+   GLOBAL BASE STYLES
+================================= */
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #fff9f2;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===============================
+   LOGIN PAGE STYLES
+================================= */
+body.login-page {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #4b2c06, #d2a156, #f2d479);
+  background-size: 300% 300%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.text-gradient {
+  background: linear-gradient(45deg, #a8742a, #d2a156);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* LOGIN CARD */
+.login-card {
+  width: 22rem;
+  background-color: #fffaf3;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(75, 44, 6, 0.2);
+  padding: 2rem;
+  animation: fadeIn 0.8s ease;
+  border: 1px solid #e3c08b;
+}
+
+@keyframes fadeIn {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+h4 {
+  color: #a8742a;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #8b5e1a, #d2a156);
+  border: none;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(139, 94, 26, 0.4);
+}
+
+.form-label {
+  font-weight: 500;
+  color: #5a3b09;
+}
+
+#errorMsg {
+  font-size: 0.9rem;
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.brand img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.brand h3 {
+  font-weight: 700;
+  color: #a8742a;
+  margin-top: 0.6rem;
+}
+
+.footer-text {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a3b09;
+  margin-top: 1rem;
+}
+
+/* DASHBOARD STYLES - GOLD/BROWN */
+
+/* Layout */
+#dashboardContainer {
+  min-height: 100vh;
+  display: flex;
+  background-color: #fff9f2;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 250px;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #4b2c06, #a8742a);
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  padding-top: 1rem;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+}
+
+#sidebar .nav-link {
+  color: #f8e7c0;
+  font-weight: 500;
+  border-radius: 8px;
+  margin: 5px 10px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+#sidebar .nav-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+#sidebar .nav-link.active {
+  background: linear-gradient(45deg, #d2a156, #f2d479);
+  color: #4b2c06 !important;
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  text-align: center;
+  font-size: 0.85rem;
+  padding: 1rem 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar-footer button {
+  color: #fff;
+  border-color: #f2d479;
+}
+
+.sidebar-footer button:hover {
+  background: #f2d479;
+  color: #4b2c06;
+}
+
+/* Main Content */
+#main-content {
+  margin-left: 250px;
+  background-color: #fffaf3;
+  min-height: 100vh;
+  padding: 2rem;
+  transition: all 0.3s ease;
+}
+
+#main-content h3 {
+  color: #4b2c06;
+}
+
+/* Dashboard Cards */
+.module-card {
+  background: #fff;
+  border: 1px solid #f2d479;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.module-card i {
+  font-size: 2.5rem;
+  background: linear-gradient(45deg, #a8742a, #f2d479);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.module-card h5 {
+  color: #4b2c06;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.module-card p {
+  color: #5a3b09;
+  font-size: 0.9rem;
+}
+
+/* Alerts */
+.alert-primary {
+  background: linear-gradient(90deg, #f9e7b3, #f2d479);
+  border: none;
+  color: #4b2c06;
+  font-weight: 500;
+  box-shadow: 0 4px 10px rgba(210, 161, 86, 0.2);
+}
+
+/* Buttons */
+.btn-primary {
+  background: linear-gradient(45deg, #a8742a, #d2a156);
+  border: none;
+  font-weight: 600;
+  color: #fff;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #8b5e1a, #c49138);
+  box-shadow: 0 4px 10px rgba(168, 116, 42, 0.4);
+}
+
+/* Animations */
+#contentArea {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+    body {
+      background: #f8f9fa;
+    }
+    #dashboardContainer {
+      display: flex;
+      min-height: 100vh;
+    }
+    #sidebar {
+      width: 250px;
+      background: #1e1f22;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+    }
+    #sidebar .nav-link {
+      color: #ccc;
+      margin: 8px 0;
+      display: block;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+    }
+    #sidebar .nav-link.active,
+    #sidebar .nav-link:hover {
+      background: #a8742a;
+      color: #fff;
+    }
+    #main-content {
+      flex: 1;
+      padding: 30px;
+      background: #fff;
+    }
+    .module-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+      padding: 20px;
+      margin-bottom: 25px;
+    }
+    .table th {
+      color: #555;
+    }
+
+
+/* EMPLOYEE DASHBOARD */
+
+    .stats-card {
+        background: #fff;
+        border-left: 5px solid #a8742a;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        transition: transform 0.2s;
+    }
+    .stats-card:hover { transform: translateY(-3px); }
+    .profile-badge {
+        position: absolute; top: 20px; right: 20px;
+        display: flex; align-items: center; gap: 10px;
+        background: #fff; padding: 10px 20px; border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .status-indicator {
+        width: 12px; height: 12px; border-radius: 50%;
+        background: #ccc; display: inline-block;
+    }
+    .status-on { background: #198754; }
+    .status-off { background: #6c757d; }
+    .status-pending { background: #ffc107; }
