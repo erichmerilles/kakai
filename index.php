@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../../config/db.php';
+require_once __DIR__ . '/config/db.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,14 +8,14 @@ require_once __DIR__ . '/../../config/db.php';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>KakaiOne | Staff Login</title>
-  <?php include __DIR__ . '/../includes/links.php'; ?>
+  <?php include __DIR__ . '/frontend/includes/links.php'; ?>
 </head>
 
 <body class="login-page">
   <div class="container d-flex align-items-center justify-content-center min-vh-100">
     <div class="login-card text-center">
       <div class="brand">
-        <img src="../assets/images/logo.jpg" alt="KakaiOne Logo">
+        <img src="frontend/assets/images/logo.jpg" alt="KakaiOne Logo">
         <h3>KakaiOne</h3>
         <p class="text-muted small mb-0">Staff Login</p>
       </div>
@@ -57,7 +57,7 @@ require_once __DIR__ . '/../../config/db.php';
       errorMsg.textContent = "";
 
       try {
-        const res = await fetch("../../backend/auth/login.php", {
+        const res = await fetch("backend/auth/login.php", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
@@ -66,6 +66,8 @@ require_once __DIR__ . '/../../config/db.php';
         const data = await res.json();
 
         if (data.success) {
+          let redirectUrl = data.redirect.replace('../../', '');
+
           Swal.fire({
             icon: "success",
             title: "Welcome!",
@@ -73,7 +75,7 @@ require_once __DIR__ . '/../../config/db.php';
             timer: 1500,
             showConfirmButton: false
           }).then(() => {
-            window.location.href = data.redirect;
+            window.location.href = redirectUrl;
           });
         } else {
           Swal.fire({
@@ -83,6 +85,7 @@ require_once __DIR__ . '/../../config/db.php';
           });
         }
       } catch (error) {
+        console.error(error);
         Swal.fire("Error", "Unable to connect to the server.", "error");
       }
     });

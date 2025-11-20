@@ -91,8 +91,8 @@ try {
 
     // Redirect based on role
     $redirect = ($user['role'] === 'Admin') 
-        ? '../../frontend/dashboard/admin_dashboard.php' 
-        : '../../frontend/dashboard/employee_dashboard.php';
+        ? 'frontend/dashboard/admin_dashboard.php' 
+        : 'frontend/dashboard/employee_dashboard.php';
 
     echo json_encode([
         'success' => true,

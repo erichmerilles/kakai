@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 
 // Only Employees can access
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Employee') {
-    header('Location: ../auth/login.php');
+    header('Location: ../../index.php');
     exit;
 }
 ?>
@@ -135,13 +135,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Employee') {
                 <p>It is currently before the end of your shift. Please select a reason:</p>
                 <div class="d-grid gap-2">
                     <button class="btn btn-outline-dark p-3 text-start" onclick="confirmClockOut('Break')">
-                        <strong>☕ Break</strong> <br><small>I will return later today.</small>
+                        <strong>Break</strong> <br><small>I will return later today.</small>
                     </button>
                     <button class="btn btn-outline-danger p-3 text-start" onclick="confirmClockOut('Emergency')">
-                        <strong>🚑 Emergency</strong> <br><small>Requires HR Review.</small>
+                        <strong>Emergency</strong> <br><small>Requires HR Review.</small>
                     </button>
                     <button class="btn btn-outline-secondary p-3 text-start" onclick="confirmClockOut('Half-day')">
-                        <strong>🌓 Half-day</strong> <br><small>Permanent clock out for the day.</small>
+                        <strong>Half-day</strong> <br><small>Permanent clock out for the day.</small>
                     </button>
                 </div>
             </div>
