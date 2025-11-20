@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../auth/login.php');
+    header('Location: ../../index.php');
     exit;
 }
 

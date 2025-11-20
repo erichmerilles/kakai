@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/db.php';
 
 // Ensure only Admin can access
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
-  header('Location: ../auth/login.php');
+  header('Location: ../../index.php');
   exit;
 }
 
