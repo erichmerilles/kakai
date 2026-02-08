@@ -1,11 +1,8 @@
 <?php
 session_start();
-
-// Redirect if not logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../../index.php');
-    exit;
-}
+require_once __DIR__ . '/../../config/db.php';
+if (!isset($_SESSION['user_id'])) header('Location: ../auth/login.php');
+?>
 
 <?php include '../includes/links.php'; ?>
 <?php include 'o_sidebar.php'; ?>

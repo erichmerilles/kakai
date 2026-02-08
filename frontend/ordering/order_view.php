@@ -2,10 +2,8 @@
 session_start();
 require_once __DIR__ . '/../../config/db.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../../index.php');
-    exit;
+    header('Location: ../auth/login.php');
 }
 
 $id = intval($_GET['id'] ?? 0);

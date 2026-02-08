@@ -55,19 +55,6 @@ h4 {
   font-weight: 600;
 }
 
-.btn-primary {
-  background: linear-gradient(45deg, #8b5e1a, #d2a156);
-  border: none;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 10px rgba(139, 94, 26, 0.4);
-}
-
 .form-label {
   font-weight: 500;
   color: #5a3b09;
@@ -103,7 +90,9 @@ h4 {
   margin-top: 1rem;
 }
 
-/* DASHBOARD STYLES - GOLD/BROWN */
+/* ===============================
+   DASHBOARD STYLES - GOLD/BROWN
+================================= */
 
 /* Layout */
 #dashboardContainer {
@@ -112,26 +101,30 @@ h4 {
   background-color: #fff9f2;
 }
 
-/* Sidebar */
+/* SIDEBAR (Centralized & Themed) 
+   Fixed position 250px width
+*/
 #sidebar {
   width: 250px;
   min-height: 100vh;
-  background: linear-gradient(180deg, #4b2c06, #a8742a);
+  background: linear-gradient(180deg, #4b2c06, #a8742a); /* Your Brown Theme */
   color: #fff;
   position: fixed;
   top: 0;
   left: 0;
   display: flex;
   flex-direction: column;
-  padding-top: 1rem;
+  padding: 20px;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
 }
 
+/* Sidebar Links */
 #sidebar .nav-link {
-  color: #f8e7c0;
+  color: #f8e7c0; /* Creamy text */
   font-weight: 500;
   border-radius: 8px;
-  margin: 5px 10px;
+  margin: 5px 0;
   padding: 10px 15px;
   display: flex;
   align-items: center;
@@ -141,21 +134,41 @@ h4 {
 #sidebar .nav-link:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
+  transform: translateX(5px);
 }
 
+/* ACTIVE STATE (Golden Highlight) */
 #sidebar .nav-link.active {
   background: linear-gradient(45deg, #d2a156, #f2d479);
   color: #4b2c06 !important;
-  font-weight: 600;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
+/* SUB-LINKS (For SPA / Submenus) */
+.sub-link, .nav-link.small {
+    transition: all 0.2s;
+    opacity: 0.8;
+    color: #f8e7c0 !important;
+}
+
+.sub-link:hover, .nav-link.small:hover { 
+    color: #f2d479 !important; /* Brighter gold on hover */
+    opacity: 1 !important; 
+    padding-left: 20px; /* Indent effect */
+}
+
+.sub-link.active {
+    color: #f2d479 !important;
+    font-weight: bold;
+    opacity: 1 !important;
+}
+
+/* SIDEBAR FOOTER */
 .sidebar-footer {
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  text-align: center;
-  font-size: 0.85rem;
-  padding: 1rem 0;
+  margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 1rem;
 }
 
 .sidebar-footer button {
@@ -166,14 +179,16 @@ h4 {
 .sidebar-footer button:hover {
   background: #f2d479;
   color: #4b2c06;
+  border-color: #f2d479;
 }
 
-/* Main Content */
+/* MAIN CONTENT */
 #main-content {
-  margin-left: 250px;
+  margin-left: 250px; /* Pushes content right */
   background-color: #fffaf3;
   min-height: 100vh;
   padding: 2rem;
+  width: calc(100% - 250px); /* Ensures full width minus sidebar */
   transition: all 0.3s ease;
 }
 
@@ -181,7 +196,7 @@ h4 {
   color: #4b2c06;
 }
 
-/* Dashboard Cards */
+/* MODULE CARDS */
 .module-card {
   background: #fff;
   border: 1px solid #f2d479;
@@ -212,21 +227,7 @@ h4 {
   margin-top: 1rem;
 }
 
-.module-card p {
-  color: #5a3b09;
-  font-size: 0.9rem;
-}
-
-/* Alerts */
-.alert-primary {
-  background: linear-gradient(90deg, #f9e7b3, #f2d479);
-  border: none;
-  color: #4b2c06;
-  font-weight: 500;
-  box-shadow: 0 4px 10px rgba(210, 161, 86, 0.2);
-}
-
-/* Buttons */
+/* BUTTONS */
 .btn-primary {
   background: linear-gradient(45deg, #a8742a, #d2a156);
   border: none;
@@ -237,85 +238,12 @@ h4 {
 
 .btn-primary:hover {
   background: linear-gradient(45deg, #8b5e1a, #c49138);
+  transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(168, 116, 42, 0.4);
 }
 
-/* Animations */
-#contentArea {
-  animation: fadeIn 0.4s ease;
+/* TABLE STYLES */
+.table th {
+  color: #5a3b09;
+  font-weight: 600;
 }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-    body {
-      background: #f8f9fa;
-    }
-    #dashboardContainer {
-      display: flex;
-      min-height: 100vh;
-    }
-    #sidebar {
-      width: 250px;
-      background: #1e1f22;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-    }
-    #sidebar .nav-link {
-      color: #ccc;
-      margin: 8px 0;
-      display: block;
-      padding: 8px 12px;
-      border-radius: 6px;
-      text-decoration: none;
-    }
-    #sidebar .nav-link.active,
-    #sidebar .nav-link:hover {
-      background: #a8742a;
-      color: #fff;
-    }
-    #main-content {
-      flex: 1;
-      padding: 30px;
-      background: #fff;
-    }
-    .module-card {
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-      padding: 20px;
-      margin-bottom: 25px;
-    }
-    .table th {
-      color: #555;
-    }
-
-
-/* EMPLOYEE DASHBOARD */
-
-    .stats-card {
-        background: #fff;
-        border-left: 5px solid #a8742a;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        transition: transform 0.2s;
-    }
-    .stats-card:hover { transform: translateY(-3px); }
-    .profile-badge {
-        position: absolute; top: 20px; right: 20px;
-        display: flex; align-items: center; gap: 10px;
-        background: #fff; padding: 10px 20px; border-radius: 50px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    }
-    .status-indicator {
-        width: 12px; height: 12px; border-radius: 50%;
-        background: #ccc; display: inline-block;
-    }
-    .status-on { background: #198754; }
-    .status-off { background: #6c757d; }
-    .status-pending { background: #ffc107; }

@@ -1,12 +1,8 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/db.php';
-
-// Redirect if not logged in
-if (!isset($_SESSION['user_id'])) {
-    header('Location: ../../index.php');
-    exit;
-}
+if (!isset($_SESSION['user_id'])) header('Location: ../auth/login.php');
+?>
 
 <?php include '../includes/links.php'; ?>
 <?php include 'o_sidebar.php'; ?>
@@ -34,19 +30,10 @@ async function loadOrders(){
   if(!res.success) return;
   res.data.forEach(o=>{
     const tr = document.createElement('tr');
-    
-    const escapeHTML = str => str.replace(/[&<>"']/g, c => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-    }[c]));
-    
-    const customerName = escapeHTML(o.full_name??'Guest');
-    const orderStatus = escapeHTML(o.status??'');
-    const paymentStatus = escapeHTML(o.payment_status??'');
-    
     tr.innerHTML = `<td>#${o.order_id}</td>
-      <td>${customerName}</td>
-      <td>${orderStatus}</td>
-      <td>${paymentStatus}</td>
+      <td>${o.full_name??'Guest'}</td>
+      <td>${o.status}</td>
+      <td>${o.payment_status}</td>
       <td>₱${Number(o.total_amount).toFixed(2)}</td>
       <td>${o.order_date}</td>
       <td>

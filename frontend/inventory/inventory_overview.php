@@ -1,229 +1,281 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/db.php';
+$activeModule = 'inventory';
+require_once __DIR__ . '/../includes/auth_check.php'; // Ensure permissions
 
-// Redirect if not logged in
+// role validation (Optional, based on your preference)
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../../index.php');
     exit;
 }
+requirePermission('inv_view');
 
+// 1. FETCH INVENTORY ITEMS (Directory)
+try {
+    $stmt = $pdo->query("
+        SELECT item_id, name, category, stock, reorder_level, price, status, created_at
+        FROM inventory 
+        ORDER BY name ASC
+    ");
+    $inventoryItems = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $inventoryItems = [];
+}
+
+// 2. INVENTORY SUMMARY (Stats for Chart)
+$inventoryStats = ['active' => 0, 'low_stock' => 0, 'out_of_stock' => 0];
+try {
+    // Count Active items (Stock > Reorder Level)
+    $stmtActive = $pdo->query("SELECT COUNT(*) FROM inventory WHERE stock > reorder_level AND stock > 0");
+    $inventoryStats['active'] = $stmtActive->fetchColumn();
+
+    // Count Low Stock (0 < Stock <= Reorder Level)
+    $stmtLow = $pdo->query("SELECT COUNT(*) FROM inventory WHERE stock <= reorder_level AND stock > 0");
+    $inventoryStats['low_stock'] = $stmtLow->fetchColumn();
+
+    // Count Out of Stock (Stock == 0)
+    $stmtOut = $pdo->query("SELECT COUNT(*) FROM inventory WHERE stock = 0");
+    $inventoryStats['out_of_stock'] = $stmtOut->fetchColumn();
+} catch (PDOException $e) {
+}
+
+// 3. RECENT MOVEMENTS (Logs)
+$movements = [];
+try {
+    $stmt = $pdo->query("
+        SELECT m.movement_id, m.type, m.quantity, m.created_at, i.name, u.username
+        FROM inventory_movements m
+        JOIN inventory i ON m.item_id = i.item_id
+        JOIN users u ON m.user_id = u.user_id
+        ORDER BY m.created_at DESC LIMIT 10
+    ");
+    $movements = $stmt->fetchAll();
+} catch (PDOException $e) {
+}
 ?>
-<?php include '../includes/links.php'; ?>
-<?php include 'i_sidebar.php'; ?>
 
-<div id="dashboardContainer">
-    <main id="main-content">
-        <div class="container-fluid">
-            <div id="inventory-overview" class="inventory-section">
-                
-                <h3 class="fw-bold mb-4">
-                    <i class="bi bi-box-seam me-2"></i>Inventory Overview
-                </h3>
+<!DOCTYPE html>
+<html lang="en">
 
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="module-card text-center">
-                            <h6>Total Items</h6>
-                            <h2 id="totalItems" class="fw-bold text-primary">0</h2>
-                        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KakaiOne | Inventory Management</title>
+    <?php include '../includes/links.php'; ?>
+</head>
+
+<body class="bg-light">
+
+    <?php include '../includes/sidebar.php'; ?>
+
+    <div id="dashboardContainer">
+        <main id="main-content" style="margin-left: 250px; padding: 25px; transition: margin-left 0.3s;">
+
+            <div class="container">
+
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold">
+                        <i class="bi bi-box-seam-fill me-2 text-warning"></i>Inventory Management
+                    </h3>
+
+                    <div class="d-flex flex-column gap-3" style="max-width: 250px;">
+                        <!--<a href="../dashboard/admin_dashboard.php" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>-->
+                        <?php if (hasPermission('inv_add')): ?>
+                            <a href="inventory_form.php" class="btn btn-warning">
+                                <i class="bi bi-plus-lg"></i> Add Item
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <i class="bi bi-list-ul me-2"></i>Inventory Directory
                     </div>
 
-                    <div class="col-md-3">
-                        <div class="module-card text-center">
-                            <h6>Total Stock Value</h6>
-                            <h2 id="stockValue" class="fw-bold">₱0.00</h2>
-                        </div>
-                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Category</th>
+                                        <th>Stock Level</th>
+                                        <th>Price</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
 
-                    <div class="col-md-3">
-                        <div class="module-card text-center">
-                            <h6 class="text-warning">Low Stock</h6>
-                            <h2 id="lowStock" class="fw-bold text-warning">0</h2>
-                        </div>
-                    </div>
+                                <tbody>
+                                    <?php if (!empty($inventoryItems)): ?>
+                                        <?php foreach ($inventoryItems as $item): ?>
+                                            <tr>
+                                                <td class="fw-bold"><?= htmlspecialchars($item['name']); ?></td>
+                                                <td><?= htmlspecialchars($item['category']); ?></td>
 
-                    <div class="col-md-3">
-                        <div class="module-card text-center">
-                            <h6 class="text-danger">Out of Stock</h6>
-                            <h2 id="outStock" class="fw-bold text-danger">0</h2>
+                                                <td>
+                                                    <?php if ($item['stock'] == 0): ?>
+                                                        <span class="text-danger fw-bold">Out of Stock</span>
+                                                    <?php elseif ($item['stock'] <= $item['reorder_level']): ?>
+                                                        <span class="text-warning fw-bold"><?= $item['stock']; ?> (Low)</span>
+                                                    <?php else: ?>
+                                                        <span class="text-success fw-bold"><?= $item['stock']; ?></span>
+                                                    <?php endif; ?>
+                                                </td>
+
+                                                <td>₱ <?= number_format($item['price'], 2); ?></td>
+
+                                                <td>
+                                                    <span class="badge bg-<?= $item['status'] === 'Active' ? 'success' : 'secondary'; ?>">
+                                                        <?= htmlspecialchars($item['status']); ?>
+                                                    </span>
+                                                </td>
+
+                                                <td>
+                                                    <a href="view_item.php?id=<?= $item['item_id']; ?>" class="btn btn-sm btn-info" title="View">
+                                                        <i class="bi bi-eye"></i>
+                                                    </a>
+                                                    <?php if (hasPermission('inv_edit')): ?>
+                                                        <a href="inventory_form.php?id=<?= $item['item_id']; ?>" class="btn btn-sm btn-warning" title="Edit">
+                                                            <i class="bi bi-pencil"></i>
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <?php if (hasPermission('inv_delete')): ?>
+                                                        <button class="btn btn-sm btn-danger" onclick="confirmDelete(<?= $item['item_id']; ?>)" title="Delete">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    <?php endif; ?>
+                                                </td>
+
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">No inventory items found.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                <div class="module-card">
-                    <h5 class="mb-3"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Stock Distribution</h5>
-                    <canvas id="stockChartOverview" height="150"></canvas>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <i class="bi bi-bar-chart me-2"></i>Inventory Summary
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <canvas id="inventoryChart" height="100"></canvas>
+                            </div>
+                            <div class="col-md-4">
+                                <p><i class="bi bi-check-circle text-success"></i> Good Stock: <?= $inventoryStats['active']; ?></p>
+                                <p><i class="bi bi-exclamation-triangle text-warning"></i> Low Stock: <?= $inventoryStats['low_stock']; ?></p>
+                                <p><i class="bi bi-x-circle text-danger"></i> Out of Stock: <?= $inventoryStats['out_of_stock']; ?></p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="module-card mb-4">
-                    <h5><i class="bi bi-plus-circle me-2 text-primary"></i>Add New Item</h5>
-
-                    <form id="addItemForm" class="row g-3 mt-2" method="POST" action="../../backend/inventory/add_item.php">
-                        <div class="col-md-6">
-                            <label class="form-label">Item Name</label>
-                            <input type="text" class="form-control" name="item_name" required>
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-dark text-white">
+                        <i class="bi bi-arrow-left-right me-2"></i>Recent Movements
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Item Name</th>
+                                        <th>Type</th>
+                                        <th>Quantity</th>
+                                        <th>Handled By</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($movements)): ?>
+                                        <?php foreach ($movements as $mov): ?>
+                                            <tr>
+                                                <td><?= date('Y-m-d H:i', strtotime($mov['created_at'])); ?></td>
+                                                <td class="fw-bold"><?= htmlspecialchars($mov['name']); ?></td>
+                                                <td>
+                                                    <?php if ($mov['type'] === 'Stock In'): ?>
+                                                        <span class="badge bg-success"><i class="bi bi-arrow-down"></i> Stock In</span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-warning text-dark"><i class="bi bi-arrow-up"></i> Stock Out</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td><?= $mov['quantity']; ?></td>
+                                                <td><?= htmlspecialchars($mov['username']); ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">No recent movements.</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Category</label>
-                            <select class="form-select" name="category_id">
-                                <option value="">Select Category</option>
-                                </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" name="quantity" required>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Unit Price</label>
-                            <input type="number" class="form-control" step="0.01" name="unit_price">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Reorder Level</label>
-                            <input type="number" class="form-control" name="reorder_level" value="10">
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Supplier (Optional)</label>
-                            <select class="form-select" name="supplier_id">
-                                <option value="">Select Supplier</option>
-                                </select>
-                        </div>
-
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-pri w-100">
-                                <i class="bi bi-save me-1"></i> Save Item
-                            </button>
-                        </div>
-                    </form>
-
-                    <div id="addItemMessage" class="mt-3"></div>
+                    </div>
                 </div>
+
             </div>
+        </main>
+    </div>
 
-            <div id="inventory-manage" class="inventory-section" style="display:none;">
-                <?php include 'inventory_manage.php'; ?>
-            </div>
-
-            <div id="inventory-movements" class="inventory-section" style="display:none;">
-                <?php include 'inventory_movements.php'; ?>
-            </div>
-            
-            <div id="inventory-analytics" class="inventory-section" style="display:none;">
-                <?php include 'inventory_analytics.php'; ?>
-            </div>
-
-        </div>
-    </main>
-</div>
-
-<script>
-function switchInventorySection(targetId) {
-    document.querySelectorAll('.inventory-section').forEach(section => {
-        section.style.display = 'none';
-    });
-
-    const targetSection = document.getElementById(targetId);
-    if (targetSection) {
-        targetSection.style.display = 'block';
-    }
-    
-    window.location.hash = targetId;
-
-    if (targetId === 'inventory-manage' && typeof initializeInventoryManage === 'function') {
-        initializeInventoryManage();
-    } else if (targetId === 'inventory-movements' && typeof initializeInventoryMovements === 'function') {
-        initializeInventoryMovements();
-    } else if (targetId === 'inventory-analytics' && typeof initializeInventoryAnalytics === 'function') {
-        initializeInventoryAnalytics();
-    }
-    
-    if (targetId === 'inventory-overview' && typeof loadDashboard === 'function') {
-        loadDashboard();
-    }
-}
-
-window.addEventListener('inventory-nav-change', (event) => {
-    switchInventorySection(event.detail.targetId);
-});
-
-window.addEventListener('load', () => {
-    const initialTarget = window.location.hash.substring(1) || 'inventory-overview';
-    switchInventorySection(initialTarget);
-});
-
-
-// Load main Overview dashboard section
-async function loadDashboard() {
-    const inv = await fetch('../../backend/inventory/get_inventory.php').then(r => r.json());
-    if (!inv.success) return;
-
-    const items = inv.data;
-
-    const totalItems = items.length;
-    const lowStock = items.filter(i => i.quantity <= i.reorder_level && i.quantity > 0).length;
-    const outStock = items.filter(i => i.quantity <= 0).length;
-    const stockValue = items.reduce((sum, i) => sum + (i.quantity * i.unit_price), 0);
-
-    document.getElementById('totalItems').innerText = totalItems;
-    document.getElementById('lowStock').innerText = lowStock;
-    document.getElementById('outStock').innerText = outStock;
-    document.getElementById('stockValue').innerText = '₱' + stockValue.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-
-    // STOCK DISTRIBUTION CHART
-    const ctx = document.getElementById('stockChartOverview').getContext('2d');
-    const labels = items.map(i => i.item_name);
-    const data = items.map(i => i.quantity);
-
-    if (window.inventoryOverviewChart) { window.inventoryOverviewChart.destroy(); } // Destroy previous instance
-
-    window.inventoryOverviewChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Quantity',
-                data: data,
-                borderWidth: 1,
-                borderRadius: 5,
-            }]
-        },
-        options: {
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true }
+    <script>
+        // 1. Initialize Inventory Chart
+        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Healthy Stock', 'Low Stock', 'Out of Stock'],
+                datasets: [{
+                    data: [<?= $inventoryStats['active']; ?>, <?= $inventoryStats['low_stock']; ?>, <?= $inventoryStats['out_of_stock']; ?>],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
             }
+        });
+
+        // 2. Delete Confirmation
+        function confirmDelete(itemId) {
+            Swal.fire({
+                title: 'Delete Item?',
+                text: "This action cannot be undone. The item will be removed from the system.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Make sure you have this backend endpoint ready or create it
+                    window.location.href = `../../backend/inventory/delete_item.php?id=${itemId}`;
+                }
+            });
         }
-    });
-}
+    </script>
 
-// Handle Add Item Form Submission
-document.getElementById('addItemForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const form = e.target;
-    const fd = new FormData(form);
+</body>
 
-    const res = await fetch(form.action, {
-        method: 'POST',
-        body: fd
-    });
-    const j = await res.json();
-    const msg = document.getElementById('addItemMessage');
-
-    if (j.success) {
-        msg.innerHTML = '<div class="alert alert-success">Item added successfully!</div>';
-        form.reset();
-        loadDashboard();
-    } else {
-        msg.innerHTML = `<div class="alert alert-danger">${j.message || 'Error adding item.'}</div>`;
-    }
-});
-
-</script>
+</html>

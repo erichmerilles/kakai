@@ -1,16 +1,19 @@
 <?php
 session_start();
 require_once __DIR__ . '/../../config/db.php';
+$activeModule = 'payroll';
+include '../includes/sidebar.php';
+include '../includes/links.php';
 
 // Redirect if not logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../../index.php');
-    exit;
+  header('Location: ../auth/login.php');
+  exit;
 }
 
 ?>
 <?php include '../includes/links.php'; ?>
-<?php include 'p_sidebar.php'; ?>
+<!--<?php include 'p_sidebar.php'; ?>-->
 
 <!--<div id="sidebar" class="d-flex flex-column">
   <div class="text-center mb-4">
@@ -77,14 +80,14 @@ if (!isset($_SESSION['user_id'])) {
 </main>
 
 <script>
-async function loadRuns(){
-  const res = await fetch('../../backend/payroll/get_runs.php').then(r=>r.json());
-  const tbody = document.querySelector('#runsTable tbody');
-  tbody.innerHTML = '';
-  if(!res.success) return;
-  res.data.forEach(r=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${r.payroll_id}</td>
+  async function loadRuns() {
+    const res = await fetch('../../backend/payroll/get_runs.php').then(r => r.json());
+    const tbody = document.querySelector('#runsTable tbody');
+    tbody.innerHTML = '';
+    if (!res.success) return;
+    res.data.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.payroll_id}</td>
       <td>${r.start_date} → ${r.end_date}</td>
       <td>${r.created_at}</td>
       <td>₱${Number(r.total_gross).toFixed(2)}</td>
@@ -93,32 +96,39 @@ async function loadRuns(){
       <td>
         <button class="btn btn-sm btn-outline-primary" onclick="viewRun(${r.payroll_id})">View</button>
       </td>`;
-    tbody.appendChild(tr);
-  });
-}
-
-document.getElementById('generateBtn').addEventListener('click', async ()=>{
-  const start = document.getElementById('startDate').value;
-  const end = document.getElementById('endDate').value;
-  const msg = document.getElementById('genMessage');
-  msg.innerHTML = '';
-  if (!start || !end) { msg.innerHTML = '<div class="alert alert-warning">Choose start and end dates</div>'; return; }
-  msg.innerHTML = '<div class="alert alert-info">Generating payroll — please wait...</div>';
-  const res = await fetch('../../backend/payroll/generate_payroll.php', {
-    method:'POST', body: JSON.stringify({start_date:start, end_date:end})
-  }).then(r=>r.json());
-  if (res.success) {
-    msg.innerHTML = '<div class="alert alert-success">Payroll generated. Run ID: '+res.payroll_id+'</div>';
-    loadRuns();
-  } else {
-    msg.innerHTML = '<div class="alert alert-danger">'+(res.message||'Error')+'</div>';
+      tbody.appendChild(tr);
+    });
   }
-});
 
-function viewRun(id){
-  const win = window.open('', '_blank', 'width=1000,height=800');
+  document.getElementById('generateBtn').addEventListener('click', async () => {
+    const start = document.getElementById('startDate').value;
+    const end = document.getElementById('endDate').value;
+    const msg = document.getElementById('genMessage');
+    msg.innerHTML = '';
+    if (!start || !end) {
+      msg.innerHTML = '<div class="alert alert-warning">Choose start and end dates</div>';
+      return;
+    }
+    msg.innerHTML = '<div class="alert alert-info">Generating payroll — please wait...</div>';
+    const res = await fetch('../../backend/payroll/generate_payroll.php', {
+      method: 'POST',
+      body: JSON.stringify({
+        start_date: start,
+        end_date: end
+      })
+    }).then(r => r.json());
+    if (res.success) {
+      msg.innerHTML = '<div class="alert alert-success">Payroll generated. Run ID: ' + res.payroll_id + '</div>';
+      loadRuns();
+    } else {
+      msg.innerHTML = '<div class="alert alert-danger">' + (res.message || 'Error') + '</div>';
+    }
+  });
 
-  const html = `
+  function viewRun(id) {
+    const win = window.open('', '_blank', 'width=1000,height=800');
+
+    const html = `
     <html>
     <head>
       <title>Payroll Run ${id}</title>
@@ -160,9 +170,9 @@ function viewRun(id){
     </html>
   `;
 
-  win.document.write(html);
-  win.document.close();
-}
+    win.document.write(html);
+    win.document.close();
+  }
 
-loadRuns();
+  loadRuns();
 </script>
